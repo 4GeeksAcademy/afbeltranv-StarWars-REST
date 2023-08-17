@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Characters, Planets, Favorites
+from models import db, User, Characters, Planets, FavoriteCharacters, FavoritePlanets
 #from models import Person
 
 app = Flask(__name__)
@@ -79,12 +79,98 @@ def get_users():
     result = list(map(lambda item: item.serialize(), all_users))
     return jsonify(result), 200  
 
-# [GET] /users/favorites Get all the favorites that belong to the current user.
+# [GET] /users/favorites Get all the favorites that belong to the current user. -done
+
+@app.route('/users/favorites/<int:user_id>', methods=['GET'])
+def get_favorites(user_id):
+
+    user_fav_pla = FavoritePlanets.query.filter_by(related_user=user_id).all()
+    result_pla = list(map(lambda item: item.serialize(), user_fav_pla))
+
+    user_fav_cha = FavoriteCharacters.query.filter_by(related_user=user_id).all()
+    result_cha = list(map(lambda item: item.serialize(), user_fav_cha))
+
+    combined_result = result_pla + result_cha
+    
+    return jsonify(combined_result), 200
 
 
-# [POST] /favorite/planet/<int:planet_id> Add a new favorite planet to the current user with the planet id = planet_id.
-# [POST] /favorite/people/<int:people_id> Add new favorite people to the current user with the people id = people_id.
+
+# [POST] /favorite/planet/<int:planet_id> Add a new favorite planet to the current user with the planet id = planet_id. - done
+@app.route('/favorite/planet/<int:planet_id>', methods=['POST'])
+def create_favorite_planet(planet_id):
+
+    new_fav_pla = request.get_json()
+
+    planet = Planets.query.get(planet_id)
+    if planet is None:
+        return jsonify({"message": "Planet not found"}), 404
+    
+    new_pla = FavoritePlanets(
+        related_user=new_fav_pla["Related_User"],
+        favorite_planets=planet_id  
+    )
+    db.session.add(new_pla)
+    db.session.commit()
+
+    response_body = {
+        "message": "Se crea nuevo planeta favorito"
+    }
+    
+    return jsonify(response_body), 200
+
+
+# [POST] /favorite/people/<int:people_id> Add new favorite people to the current user with the people id = people_id. -done
+@app.route('/favorite/people/<int:people_id>', methods=['POST'])
+def create_favorite_character(people_id):
+
+    new_fav_cha = request.get_json()
+
+    character = Characters.query.get(people_id)
+    if character is None:
+        return jsonify({"message": "Character not found"}), 404
+    
+    new_cha = FavoriteCharacters(
+        related_user=new_fav_cha["Related_User"],
+        favorite_characters=people_id  
+    )
+    db.session.add(new_cha)
+    db.session.commit()
+
+    response_body = {
+        "message": "Se crea nuevo personaje favorito"
+    }
+    
+    return jsonify(response_body), 200
+
+
+
 # [DELETE] /favorite/planet/<int:planet_id> Delete favorite planet with the id = planet_id.
+
+@app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
+def delete_favorite_character(people_id):
+
+    # new_fav_cha = request.get_json()
+
+    # character = Characters.query.get(people_id)
+    # if character is None:
+    #     return jsonify({"message": "Character not found"}), 404
+    
+    # new_cha = FavoriteCharacters(
+    #     related_user=new_fav_cha["Related_User"],
+    #     favorite_characters=people_id  
+    # )
+    # db.session.add(new_cha)
+    # db.session.commit()
+
+    response_body = {
+        "message": "Se borra personaje favorito"
+    }
+    
+    return jsonify(response_body), 200
+
+
+
 # [DELETE] /favorite/people/<int:people_id> Delete favorite people with the id = people_id.
 
 
