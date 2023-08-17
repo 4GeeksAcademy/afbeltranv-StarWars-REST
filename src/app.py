@@ -145,33 +145,35 @@ def create_favorite_character(people_id):
 
 
 
-# [DELETE] /favorite/planet/<int:planet_id> Delete favorite planet with the id = planet_id.
+# [DELETE] /favorite/planet/<int:planet_id> Delete favorite planet with the id = planet_id. - done
+@app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
+def delete_favorite_planet(planet_id):
 
-@app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
-def delete_favorite_character(people_id):
-
-    # new_fav_cha = request.get_json()
-
-    # character = Characters.query.get(people_id)
-    # if character is None:
-    #     return jsonify({"message": "Character not found"}), 404
+    cha=FavoritePlanets.query.filter_by(favorite_planets=planet_id).first()
+    db.session.delete(cha)
+    db.session.commit()
     
-    # new_cha = FavoriteCharacters(
-    #     related_user=new_fav_cha["Related_User"],
-    #     favorite_characters=people_id  
-    # )
-    # db.session.add(new_cha)
-    # db.session.commit()
-
     response_body = {
-        "message": "Se borra personaje favorito"
+        "message": "Se borra planeta favorito"
     }
     
     return jsonify(response_body), 200
 
 
 
-# [DELETE] /favorite/people/<int:people_id> Delete favorite people with the id = people_id.
+# [DELETE] /favorite/people/<int:people_id> Delete favorite people with the id = people_id. -done
+@app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
+def delete_favorite_character(people_id):
+
+    cha=FavoriteCharacters.query.filter_by(favorite_characters=people_id).first()
+    db.session.delete(cha)
+    db.session.commit()
+    
+    response_body = {
+        "message": "Se borra personaje favorito"
+    }
+    
+    return jsonify(response_body), 200
 
 
 
